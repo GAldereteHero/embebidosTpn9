@@ -54,7 +54,9 @@
 #include "FreeRTOS.h"
 #include "bsp.h"
 #include "task.h"
+#include "semphr.h"
 #include <stdbool.h>
+
 
 /* === Definicion y Macros ================================================= */
 
@@ -69,7 +71,7 @@ typedef struct parametros_s {
 
 /* === Definiciones de variables internas ================================== */
 
-static board_t board;
+static SemaphoreHandle_t mutex;
 
 /* === Definiciones de variables externas ================================== */
 
@@ -79,7 +81,11 @@ void Blinking(void * parameters) {
     parametros_t parametros = (parametros_t) parameters;
 
     while (true) {
-        DigitalOutputToggle(parametros->led);
+        xSemaphoreTake(mutex, portMAX_DELAY);
+        DigitalOutputActivate(parametros->led);
+        vTaskDelay(pdMS_TO_TICKS(parametros->delay));
+        DigitalOutputDeactivate(parametros->led);
+        xSemaphoreGive(mutex);
         vTaskDelay(pdMS_TO_TICKS(parametros->delay));
     }
 }
@@ -95,19 +101,23 @@ void Blinking(void * parameters) {
  */
 int main(void) {
     /* Inicializaciones y configuraciones de dispositivos */
+    static board_t board;
+    // static SemaphoreHandle_t mutex;
     static struct parametros_s parametros[2];
     
     board = BoardCreate();
 
-    parametros[0].led = board->led_azul;
-    parametros[0].delay = 500;
+    mutex = xSemaphoreCreateMutex();
 
-    parametros[1].led = board->led_verde;
-    parametros[1].delay = 750;
+    parametros[0].led = board->led_red;
+    parametros[0].delay = 1500;
+
+    parametros[1].led = board->led_blue;
+    parametros[1].delay = 2500;
 
     /* Creación de las tareas */
-    xTaskCreate(Blinking, "Rojo", configMINIMAL_STACK_SIZE, &parametros[0], tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(Blinking, "Verde", configMINIMAL_STACK_SIZE, &parametros[1], tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(Blinking, "Red", configMINIMAL_STACK_SIZE, &parametros[0], tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(Blinking, "Blue", configMINIMAL_STACK_SIZE, &parametros[1], tskIDLE_PRIORITY + 1, NULL);
 
     /* Arranque del sistema operativo */
     vTaskStartScheduler();

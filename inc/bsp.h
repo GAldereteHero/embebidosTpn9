@@ -57,7 +57,9 @@ extern "C" {
 /* === Public data type declarations =========================================================== */
 
 typedef struct board_s {
-    digital_output_t led_azul;
+    digital_output_t led_red;
+    digital_output_t led_green;
+    digital_output_t led_blue;
     digital_output_t led_rojo;
     digital_output_t led_amarillo;
     digital_output_t led_verde;
