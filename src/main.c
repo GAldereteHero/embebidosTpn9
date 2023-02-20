@@ -110,10 +110,10 @@ int main(void) {
     mutex = xSemaphoreCreateMutex();
 
     parametros[0].led = board->led_red;
-    parametros[0].delay = 1500;
+    parametros[0].delay = 500;
 
     parametros[1].led = board->led_blue;
-    parametros[1].delay = 2500;
+    parametros[1].delay = 500;
 
     /* Creación de las tareas */
     xTaskCreate(Blinking, "Red", configMINIMAL_STACK_SIZE, &parametros[0], tskIDLE_PRIORITY + 1, NULL);
